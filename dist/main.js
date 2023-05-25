@@ -2,7 +2,7 @@ async function geturl() {
   try {
     const functiongeturlLocation = "/.netlify/functions/handlerequest";
     const response = await fetch(functiongeturlLocation, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       }
