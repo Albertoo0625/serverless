@@ -2,3 +2,8 @@
     publish = "dist/"
 
     functions = "serverless/"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/handlerequest"
+  status = 200
