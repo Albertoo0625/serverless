@@ -6,7 +6,7 @@
   
   html {
     background-color: purple;
-    background-image: url("../dist/img/radio.jpg");
+    background-image: url("./img/radio.jpg");
     background-size: cover;
     background-position: center;
     background-blend-mode: overlay;
