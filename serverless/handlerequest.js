@@ -26,6 +26,7 @@ exports.handler = async (event, context) => {
 
   try {
     const requestBody = JSON.parse(event.body);
+    console.log(requestBody);
     const url = requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
@@ -41,8 +42,7 @@ exports.handler = async (event, context) => {
         res.setHeader('Transfer-Encoding', 'chunked');
 
         pipeline(response.data, res, (error) => {
-          res.setHeader('Content-Type', 'audio/mpeg');
-          res.setHeader('Transfer-Encoding', 'chunked');
+         
           if (error) {
             console.error('Pipeline encountered an error:', error);
           }
@@ -70,7 +70,7 @@ exports.handler = async (event, context) => {
             ngrok.kill();
             ngrokUrl = await ngrok.connect({
               authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
-              addr: `https://localhost:${port}`, // Use the available port
+              addr: `http://localhost:${port}`, // Use the available port
               region: 'in', // Replace with your desired ngrok region
             });
 
