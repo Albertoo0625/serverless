@@ -58,7 +58,7 @@ exports.handler = async (event, context) => {
     const server = http.createServer(handleStream);
 
     // Find the next available port
-    const port = await findAvailablePort(80);
+    const port = await findAvailablePort(4000);
 
     // Function to start the server and expose it with ngrok
     const startServer = async () => {
