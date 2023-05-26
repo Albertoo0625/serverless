@@ -60,11 +60,11 @@ exports.handler = async (event, context) => {
 
     // Start the server and expose it with ngrok
     await new Promise((resolve, reject) => {
-      ngrok.kill();
       server.listen(port, async () => {
         console.log(`Server is running on port ${port}`);
 
         try {
+          ngrok.kill();
           ngrokUrl = await ngrok.connect({
             authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
             addr: port, // Use the available port
@@ -86,6 +86,7 @@ exports.handler = async (event, context) => {
           });
         } catch (error) {
           console.error('Error starting ngrok:', error);
+          ngrok.kill();
           reject({
             statusCode: 500,
             body: 'Internal Server Error',
