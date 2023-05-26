@@ -41,6 +41,8 @@ exports.handler = async (event, context) => {
         res.setHeader('Transfer-Encoding', 'chunked');
 
         pipeline(response.data, res, (error) => {
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Transfer-Encoding', 'chunked');
           if (error) {
             console.error('Pipeline encountered an error:', error);
           }
