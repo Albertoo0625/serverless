@@ -7,3 +7,8 @@
   from = "/*"
   to = "/.netlify/functions/handlerequest"
   status = 200
+
+[[redirects]]
+  from = "/stream/*"
+  to = "/.netlify/functions/stream"
+  status = 200
