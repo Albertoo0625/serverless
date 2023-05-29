@@ -72,6 +72,7 @@ exports.handler = async (event, context) => {
               authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
               addr: `http://localhost:${port}`, // Use the available port
               region: 'in', // Replace with your desired ngrok region
+              host_header: 'rewrite',
             });
 
             console.log('ngrok connected:', ngrokUrl);
