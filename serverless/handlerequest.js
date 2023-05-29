@@ -73,6 +73,7 @@ exports.handler = async (event, context) => {
               addr: port, // Use the available port
               region: 'in', // Replace with your desired ngrok region
               host_header: 'rewrite',
+              proto: 'http'
             });
 
             console.log('ngrok connected:', ngrokUrl);
