@@ -22,11 +22,9 @@ const findAvailablePort = async (port) => {
 };
 
 exports.handler = async (event, context) => {
-  let ngrokUrl; // Declare ngrokUrl outside the try block
-
   try {
-    const requestBody =event.body;
-    console.log(requestBody);
+    let ngrokUrl;
+    const requestBody = JSON.parse(event.body);
     const url = requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
@@ -42,7 +40,6 @@ exports.handler = async (event, context) => {
         res.setHeader('Transfer-Encoding', 'chunked');
 
         pipeline(response.data, res, (error) => {
-         
           if (error) {
             console.error('Pipeline encountered an error:', error);
           }
@@ -60,72 +57,45 @@ exports.handler = async (event, context) => {
     // Find the next available port
     const port = await findAvailablePort(3000);
 
-    // Function to start the server and expose it with ngrok
-    const startServer = async () => {
-      return new Promise((resolve, reject) => {
-        server.listen(port, async () => {
-          console.log(`Server is running on port ${port}`);
+    // Start the server and expose it with ngrok
+    await new Promise((resolve, reject) => {
+      server.listen(port, async () => {
+        console.log(`Server is running on port ${port}`);
 
-          try {
+        try {
+           ngrokUrl = await ngrok.connect({
+            authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
+            addr: port, // Use the available port
+            region: 'in', // Replace with your desired ngrok region
+          });
+
+          console.log('ngrok connected:', ngrokUrl);
+
+          // Close ngrok connection when Node.js exits
+          process.on('exit', () => {
             ngrok.kill();
-            ngrokUrl = await ngrok.connect({
-              authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
-              addr: port, // Use the available port
-              region: 'in', // Replace with your desired ngrok region
-              host_header: 'rewrite',
-              proto: 'http'
-            });
+          });
 
-            console.log('ngrok connected:', ngrokUrl);
-
-            // Close ngrok connection when Node.js exits
-            process.on('exit', () => {
-              ngrok.kill();
-            });
-
-            resolve({
-              statusCode: 200,
-              body: JSON.stringify({
-                ngrokUrl: ngrokUrl,
-              }),
-            });
-          } catch (error) {
-            console.error('Error starting ngrok:', error);
-            reject({
-              statusCode: 500,
-              body: 'Internal Server Error',
-            });
-          }
-        });
-      });
-    };
-
-    let retries = 0;
-    const maxRetries = 2;
-
-    // Function to handle retries
-    const retry = async () => {
-      try {
-        ngrok.kill(); // Kill ngrok before retry
-        return await startServer();
-      } catch (error) {
-        retries++;
-        if (retries <= maxRetries && error.statusCode === 500) {
-          console.log(`Retrying (${retries}/${maxRetries})...`);
-          return await retry();
-        } else {
-          throw error;
+          resolve({
+            statusCode: 200,
+            body: ngrokUrl,
+          });
+        } catch (error) {
+          console.error('Error starting ngrok:', error);
+          reject({
+            statusCode: 500,
+            body: 'Internal Server Error',
+          });
         }
-      }
+      });
+    });
+
+    return {
+      statusCode: 200,
+      body: `ngrokUrl : ${ngrokUrl}`,
     };
-
-    // Start the server and expose it with ngrok (with retry functionality)
-    const result = await retry();
-
-    return result;
   } catch (error) {
     console.log(error);
-    ngrok.kill();
     return {
       statusCode: 500,
       body: 'Internal Server Error',
