@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   let ngrokUrl; // Declare ngrokUrl outside the try block
 
   try {
-    const requestBody = JSON.parse(event.body);
+    const requestBody =event.body;
     console.log(requestBody);
     const url = requestBody.url;
 
