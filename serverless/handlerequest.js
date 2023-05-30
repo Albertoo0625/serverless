@@ -24,7 +24,7 @@ const findAvailablePort = async (port) => {
 exports.handler = async (event, context) => {
   try {
     let ngrokUrl;
-    const requestBody = JSON.parse(event.body);
+    const requestBody = event.body;
     const url = requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
