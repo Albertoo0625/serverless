@@ -1,29 +1,10 @@
 const axios = require('axios');
 const { pipeline } = require('stream');
-const ngrok = require('ngrok');
 const http = require('http');
-
-const findAvailablePort = async (port) => {
-  const server = http.createServer();
-  return new Promise((resolve, reject) => {
-    server.on('error', (error) => {
-      if (error.code === 'EADDRINUSE') {
-        resolve(findAvailablePort(port + 1));
-      } else {
-        reject(error);
-      }
-    });
-    server.listen(port, () => {
-      server.close(() => {
-        resolve(port);
-      });
-    });
-  });
-};
 
 exports.handler = async (event, context) => {
   try {
-    const requestBody = event.body;
+    const requestBody = JSON.parse(event.body);
     const url = requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
@@ -52,21 +33,17 @@ exports.handler = async (event, context) => {
 
     const server = http.createServer(handleStream);
 
-    const port = await findAvailablePort(3000);
-
-    const ngrokUrl = await ngrok.connect({
-      authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
-      addr: port,
-      region: 'in',
-    });
-
-    server.listen(port, () => {
+    server.listen(() => {
+      const port = server.address().port;
       console.log(`Server is running on port ${port}`);
     });
 
+    const serverUrl = `https://${process.env.NETLIFY_SITE_ID}.netlify.app`;
+    const endpoint = serverUrl + context.path;
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ngrokUrl }),
+      body: JSON.stringify({ endpoint }),
     };
   } catch (error) {
     console.log('Error:', error);
