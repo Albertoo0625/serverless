@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { pipeline } = require('stream');
 const http = require('http');
 
 exports.handler = async (event, context) => {
@@ -15,15 +14,20 @@ exports.handler = async (event, context) => {
           responseType: 'stream',
         });
 
-        // Set the appropriate headers for the response
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Transfer-Encoding', 'chunked');
+        // Get the stream data
+        const stream = response.data;
 
-        pipeline(response.data, res, (error) => {
-          if (error) {
-            console.error('Pipeline encountered an error:', error);
-          }
+        // Make a new HTTP request to the desired endpoint
+        const endpoint = `https://${process.env.NETLIFY_SITE_ID}.netlify.app/${context.awsRequestId}`;
+        await axios.post(endpoint, stream, {
+          headers: {
+            'Content-Type': 'audio/mpeg',
+          },
         });
+
+        // Send a success response
+        res.statusCode = 200;
+        res.end('Stream data passed to the endpoint successfully');
       } catch (error) {
         console.error('Error handling stream:', error);
         res.statusCode = 500;
@@ -38,8 +42,7 @@ exports.handler = async (event, context) => {
       console.log(`Server is running on port ${port}`);
     });
 
-    const serverUrl = `https://${process.env.NETLIFY_SITE_ID}.netlify.app`;
-    const endpoint = serverUrl + context.path;
+    const endpoint = `https://${process.env.NETLIFY_SITE_ID}.netlify.app/${context.awsRequestId}`;
 
     return {
       statusCode: 200,
