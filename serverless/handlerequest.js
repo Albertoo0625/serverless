@@ -4,8 +4,8 @@ const http = require('http');
 exports.handler = async (event, context) => {
   try {
     const requestBody = event.body;
-    const urlObj = JSON.parse(requestBody);
-    const url=urlObj.url;
+    // const urlObj = JSON.parse(requestBody);
+    const url=requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
 
