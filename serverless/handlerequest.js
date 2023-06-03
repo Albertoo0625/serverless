@@ -45,6 +45,7 @@ exports.handler = async (event, context) => {
     const server = await serverPromise;
     const port = server.address().port;
     const serverUrl = `https://${process.env.NETLIFY_SITE_ID}.netlify.app:${port}`;
+    // const serverUrl = `http://localhost:${port}`;
 
     return {
       statusCode: 200,
