@@ -23,8 +23,7 @@ const findAvailablePort = async (port) => {
 
 exports.handler = async (event, context) => {
   try {
-    let ngrokUrl;
-    const requestBody = event.body;
+    const requestBody = JSON.parse(event.body);
     const url = requestBody.url;
 
     console.log(`REQUEST URL: ${url}`);
@@ -51,51 +50,26 @@ exports.handler = async (event, context) => {
       }
     };
 
-    // Create an HTTP server
     const server = http.createServer(handleStream);
 
-    // Find the next available port
     const port = await findAvailablePort(3000);
 
-    // Start the server and expose it with ngrok
-    await new Promise((resolve, reject) => {
-      server.listen(port, async () => {
-        console.log(`Server is running on port ${port}`);
+    const ngrokUrl = await ngrok.connect({
+      authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
+      addr: port,
+      region: 'in',
+    });
 
-        try {
-           ngrokUrl = await ngrok.connect({
-            authtoken: '2KVGmlxJUHWrgTXlIU9wtesvpM3_39DmFsdbs5eBcQsustWvy',
-            addr: port, // Use the available port
-            region: 'in', // Replace with your desired ngrok region
-          });
-
-          console.log('ngrok connected:', ngrokUrl);
-
-          // Close ngrok connection when Node.js exits
-          process.on('exit', () => {
-            ngrok.kill();
-          });
-
-          resolve({
-            statusCode: 200,
-            body: ngrokUrl,
-          });
-        } catch (error) {
-          console.error('Error starting ngrok:', error);
-          reject({
-            statusCode: 500,
-            body: 'Internal Server Error',
-          });
-        }
-      });
+    server.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
     });
 
     return {
       statusCode: 200,
-      body: `ngrokUrl : ${ngrokUrl}`,
+      body: JSON.stringify({ ngrokUrl }),
     };
   } catch (error) {
-    console.log(error);
+    console.log('Error:', error);
     return {
       statusCode: 500,
       body: 'Internal Server Error',
