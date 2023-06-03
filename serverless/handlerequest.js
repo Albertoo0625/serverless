@@ -5,12 +5,18 @@ exports.handler = async (event, context) => {
   try {
     const requestBody = event.body;
     const urlObj = JSON.parse(requestBody);
-    const url=urlObj.url;
+    const url = urlObj.url;
 
     console.log(`REQUEST URL: ${url}`);
 
     const serverPromise = new Promise((resolve, reject) => {
       const server = http.createServer((req, res) => {
+        // Set CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        // Handle the stream
         handleStream(req, res).catch(error => {
           console.error('Error handling stream:', error);
           res.statusCode = 500;
