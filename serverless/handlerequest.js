@@ -44,7 +44,7 @@ exports.handler = async (event, context) => {
 
     const server = await serverPromise;
     const port = server.address().port;
-    const serverUrl = `https://gleaming-frangipane-d8c0d8.netlify.app.netlify.app:${port}`;
+    const serverUrl = `https://gleaming-frangipane-d8c0d8.netlify.app:${port}`;
     // const serverUrl = `http://localhost:${port}`;
 
     return {
