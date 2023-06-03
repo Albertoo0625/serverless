@@ -8,45 +8,46 @@ exports.handler = async (event, context) => {
 
     console.log(`REQUEST URL: ${url}`);
 
-    const handleStream = async (req, res) => {
-      try {
-        const response = await axios.get(url, {
-          responseType: 'stream',
+    const serverPromise = new Promise((resolve, reject) => {
+      const server = http.createServer((req, res) => {
+        handleStream(req, res).catch(error => {
+          console.error('Error handling stream:', error);
+          res.statusCode = 500;
+          res.end('Internal Server Error');
         });
+      });
 
-        // Get the stream data
-        const stream = response.data;
+      server.listen(() => {
+        const port = server.address().port;
+        console.log(`Server is running on port ${port}`);
+        resolve(server);
+      });
 
-        // Make a new HTTP request to the desired endpoint
-        const endpoint = `https://${process.env.NETLIFY_SITE_ID}.netlify.app/${context.awsRequestId}`;
-        await axios.post(endpoint, stream, {
-          headers: {
-            'Content-Type': 'audio/mpeg',
-          },
-        });
-
-        // Send a success response
-        res.statusCode = 200;
-        res.end('Stream data passed to the endpoint successfully');
-      } catch (error) {
-        console.error('Error handling stream:', error);
-        res.statusCode = 500;
-        res.end('Internal Server Error');
-      }
-    };
-
-    const server = http.createServer(handleStream);
-
-    server.listen(() => {
-      const port = server.address().port;
-      console.log(`Server is running on port ${port}`);
+      server.on('error', error => {
+        reject(error);
+      });
     });
 
-    const endpoint = `https://${process.env.NETLIFY_SITE_ID}.netlify.app/${context.awsRequestId}`;
+    const handleStream = async (req, res) => {
+      const response = await axios.get(url, {
+        responseType: 'stream',
+      });
+
+      // Set the appropriate headers for the response
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Transfer-Encoding', 'chunked');
+
+      // Pipe the response data to the server response
+      response.data.pipe(res);
+    };
+
+    const server = await serverPromise;
+    const port = server.address().port;
+    const serverUrl = `https://${process.env.NETLIFY_SITE_ID}.netlify.app:${port}`;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ endpoint }),
+      body: JSON.stringify({ serverUrl }),
     };
   } catch (error) {
     console.log('Error:', error);
